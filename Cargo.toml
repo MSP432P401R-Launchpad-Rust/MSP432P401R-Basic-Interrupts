@@ -1,0 +1,25 @@
+[package]
+authors = ["I am the Carl <jamescarl96@gmail.com>"]
+edition = "2018"
+readme = "README.md"
+name = "lesson2"
+version = "0.1.0"
+
+[dependencies]
+# We must enable the rt feature in order to get that handy #[interrupt] macro we use.
+msp432p401r = { git = "https://github.com/klanmiko/msp432p401r", features = ["rt"] }
+cortex-m = "0.6.2"
+cortex-m-rt = "0.6.12"
+cortex-m-semihosting = "0.3.5"
+panic-halt = "0.2.0"
+
+# this lets you use `cargo fix`!
+[[bin]]
+name = "lesson2"
+test = false
+bench = false
+
+[profile.release]
+codegen-units = 1 # better optimizations
+debug = true # symbols are nice and they don't increase the size on Flash
+lto = true # better optimizations
