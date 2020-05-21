@@ -12,7 +12,6 @@ cortex-m = "0.6.2"
 cortex-m-rt = "0.6.12"
 cortex-m-semihosting = "0.3.5"
 panic-halt = "0.2.0"
-spin = "0.5.2"
 
 # Lazy static needs special configuration to be used in a no_std context.
 [dependencies.lazy_static]

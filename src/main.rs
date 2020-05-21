@@ -14,7 +14,7 @@ use msp432p401r::interrupt;
 
 use lazy_static::lazy_static;
 
-use spin::Mutex;
+use cortex_m::interrupt::Mutex;
 
 lazy_static! {
     pub static ref PERIPHERALS: Mutex<msp432p401r::Peripherals> = Mutex::new(msp432p401r::Peripherals::take().unwrap());
@@ -26,8 +26,8 @@ fn main() -> ! {
     // We can only hold onto the periphrials for the time we lock them for.
     // Note that if we interrupt while this is locked, we will deadlock. Because of that, this must be an interrupt free zone.
     // This is a critical section!
-    cortex_m::interrupt::free(|_| {
-        // See that odd little _ up there? You could put any variable name you want up there. Typically you'll put "cs" there for "critical section".
+    cortex_m::interrupt::free(|cs| {
+        // See that odd little cs up there? You could put any variable name you want up there. Typically you'll put "cs" there for "critical section".
         // It's nothing but a token. By the time this compiles into the final product, there will be nothing left of it. Its purpose is to let functions
         // that demand you call them from a critical section know you called from a critical section. Because it's an argument to the function, the
         // code will refuse to compile unless you provide it with the critical section token, which can only exist in a critical section.
@@ -35,7 +35,7 @@ fn main() -> ! {
 
         // Our peripherals must be shared with the interrupt. We have to convince Rust that it's not going to try
         // accessing the periphrials while we're using them and cause memory coruption. 
-        let p = PERIPHERALS.lock();
+        let p = PERIPHERALS.borrow(cs); // Oh look we just borrowed the cs token.
 
         // We take the cortex peripherals. These are only taken locally since we do not need to share them with the interrupt.
         let cortex_p = cortex_m::Peripherals::take().unwrap();
@@ -102,8 +102,8 @@ fn PORT1_IRQ() {
 
     *STATE = !*STATE;
 
-    cortex_m::interrupt::free(|_| {
-        let p = PERIPHERALS.lock();
+    cortex_m::interrupt::free(|cs| {
+        let p = PERIPHERALS.borrow(cs);
 
         // Get the Digital I/O module
         let dio = &p.DIO;
